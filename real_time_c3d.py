@@ -25,13 +25,15 @@ import cv2
 import heapq
 
 # Basic model parameters as external flags.
-flags = tf.app.flags
+flags = tf.compat.v1.app.flags
 gpu_num = 1
 flags.DEFINE_integer('batch_size', 1 , 'Batch size.')
 FLAGS = flags.FLAGS
 
-images_placeholder = tf.placeholder(tf.float32, shape=(1, 16, 112, 112, 3))
-labels_placeholder = tf.placeholder(tf.int64, shape=1)
+tf.compat.v1.disable_eager_execution()
+images_placeholder = tf.compat.v1.placeholder(tf.float32, shape=(1, 16, 112, 112, 3))
+tf.compat.v1.disable_eager_execution()
+labels_placeholder = tf.compat.v1.placeholder(tf.int64, shape=1)
 
 def placeholder_inputs(batch_size):
   """Generate placeholder variables to represent the input tensors.
@@ -54,15 +56,15 @@ def placeholder_inputs(batch_size):
 def _variable_on_cpu(name, shape, initializer):
     #with tf.device('/cpu:%d' % cpu_id):
     with tf.device('/cpu:0'):
-        var = tf.get_variable(name, shape, initializer=initializer)
+        var = tf.compat.v1.get_variable(name, shape, initializer=initializer)
     return var
 
 
 def _variable_with_weight_decay(name, shape, stddev, wd):
-    var = _variable_on_cpu(name, shape, tf.truncated_normal_initializer(stddev=stddev))
+    var = _variable_on_cpu(name, shape, tf.compat.v1.truncated_normal_initializer(stddev=stddev))
     if wd is not None:
         weight_decay = tf.nn.l2_loss(var) * wd
-        tf.add_to_collection('losses', weight_decay)
+        tf.compat.v1.add_to_collection('losses', weight_decay)
     return var
 
 
@@ -100,7 +102,7 @@ def build_c3d_model():
     #model_name = "pretrained_model/conv3d_deepnetA_sport1m_iter_1900000_TF.model"
     model_name = "pretrained_model/sports1m_finetuning_ucf101.model"
     # Get the sets of images and labels for training, validation, and
-    with tf.variable_scope('var_name') as var_scope:
+    with tf.compat.v1.variable_scope('var_name') as var_scope:
         weights = {
             'wc1': _variable_with_weight_decay('wc1', [3, 3, 3, 3, 64], 0.04, 0.00),
             'wc2': _variable_with_weight_decay('wc2', [3, 3, 3, 64, 128], 0.04, 0.00),
@@ -136,9 +138,9 @@ def build_c3d_model():
             logits.append(logit)
     logits = tf.concat(logits, 0)
     norm_score = tf.nn.softmax(logits)
-    saver = tf.train.Saver()
-    sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True))
-    init = tf.global_variables_initializer()
+    saver = tf.compat.v1.train.Saver()
+    sess = tf.compat.v1.Session(config=tf.compat.v1.ConfigProto(allow_soft_placement=True))
+    init = tf.compat.v1.global_variables_initializer()
     sess.run(init)
     # Create a saver for writing training checkpoints.
     saver.restore(sess, model_name)
@@ -165,7 +167,7 @@ def real_time_recognition(video_path):
         for line in f:
             content = line.strip('\r\n').split(' ')
             classes[content[0]] = content[1]
-   # print(classes)
+    #print(classes)
     while True:
         ret, img = cap.read()
         if type(img) == type(None):
@@ -199,4 +201,4 @@ def main(_):
     real_time_recognition(video_path)
 
 if __name__ == '__main__':
-    tf.app.run()
+    tf.compat.v1.app.run()

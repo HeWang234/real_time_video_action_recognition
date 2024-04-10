@@ -1,6 +1,8 @@
 # real time action recognition
 
 ## example
+相比原版本，支持Tensorflow 2.0 -HeWang
+
 
 ### In Cpu;
 ![](https://github.com/FingerRec/real_time_video_action_recognition/raw/master/resources/test_gif.gif)
@@ -14,7 +16,7 @@ the video cann't show here, the below are some capture images.
 
 
 ## prepare
-* tensorflow 1.2+  
+* tensorflow 2
 * opencv3.x  
 * pillow
 * scipy
